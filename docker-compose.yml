@@ -1,0 +1,65 @@
+version: '3.8'
+
+networks:
+    dev:
+        driver: bridge
+
+services:       
+    kariyer-api:
+        image: docker.io/library/kariyer
+        depends_on:
+            - "kariyer-db"
+            - "elasticsearch"
+        container_name: kariyer-api
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - 8088:80
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - PostgreConfig__ConnectionString=Server=kariyer-db;Port=5432;Database=Kariyer;User ID=postgres;Password=postgres;Pooling=true;
+            - HangfireConfig__ConnectionString=Server=kariyer-db;Port=5432;Database=Kariyer;User ID=postgres;Password=postgres;Pooling=true;
+        links: 
+            - "elasticsearch"
+        networks:
+            - dev
+    
+    kariyer-db:
+        image: postgres:14
+        container_name: kariyer-db
+        ports:
+            - 5433:5432
+        volumes:
+            - ~/apps/postgres:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=Kariyer
+        networks:
+            - dev
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+        container_name: elasticsearch
+        environment:
+            - xpack.security.enabled=false
+            - discovery.type=single-node
+        ports:
+            - 9200:9200
+        volumes:
+            - elasticsearch-data:/usr/share/elasticsearch/data
+        networks:
+            - dev
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:8.11.1
+        ports:
+            - 5601:5601
+        environment:
+            ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
+volumes:
+    elasticsearch-data:
+        driver: local

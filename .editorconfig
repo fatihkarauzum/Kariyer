@@ -1,0 +1,12 @@
+# .editorconfig
+
+# Üst düzey namespace blokları arasında bir satır boşluk bırak
+[*.{cs,vb}]
+namespace.layout.suffix = true
+
+# Class, enum, interface vb. tanımları arasında bir satır boşluk bırak
+[*.{cs,vb}]
+class.layout.suffix = true
+enum.layout.suffix = true
+interface.layout.suffix = true
+struct.layout.suffix = true
